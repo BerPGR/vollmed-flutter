@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:vollmed/app/view/home_page.dart';
 
 class AppWidget extends StatelessWidget {
@@ -6,17 +7,24 @@ class AppWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Color(0xFF00213D),
+        statusBarIconBrightness: Brightness.light,
+      ),
+    );
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        scaffoldBackgroundColor: Colors.white,
+        brightness: Brightness.light,
       ),
       initialRoute: "/",
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case "/":
-            return MaterialPageRoute(builder: (_) => const HomePage());
+            return MaterialPageRoute(builder: (_) => HomePage());
         }
       },
     );
