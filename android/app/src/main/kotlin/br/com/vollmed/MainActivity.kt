@@ -1,0 +1,5 @@
+package br.com.vollmed
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity: FlutterActivity()
