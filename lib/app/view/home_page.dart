@@ -64,6 +64,7 @@ class HomePage extends StatelessWidget {
                       return HomeChoiceButton(
                         title: option["title"] as String, 
                         image: option["image"] as String,
+                        to: option["page"] as String,
                       );
                     },
                     itemCount: buttonOptions.length))

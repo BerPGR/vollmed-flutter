@@ -4,7 +4,8 @@ import 'package:vollmed/app/core/utils/text_styles.dart';
 class HomeChoiceButton extends StatelessWidget {
   final String title;
   final String image;
-  const HomeChoiceButton({super.key, required this.title, required this.image});
+  final String to;
+  const HomeChoiceButton({super.key, required this.title, required this.image, required this.to});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +20,7 @@ class HomeChoiceButton extends StatelessWidget {
         width: double.infinity,
         child: InkWell(
           onTap: () {
-            print("Clicou");
+            Navigator.of(context).pushNamed(to);
           },
           splashColor: Colors.white10,
           child: Column(

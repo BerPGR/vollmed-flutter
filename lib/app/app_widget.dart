@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:vollmed/app/view/consulta_page.dart';
 import 'package:vollmed/app/view/home_page.dart';
+import 'package:vollmed/app/view/medico_page.dart';
+import 'package:vollmed/app/view/pacientes_page.dart';
 
 class AppWidget extends StatelessWidget {
   const AppWidget({super.key});
@@ -17,6 +20,16 @@ class AppWidget extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
+        appBarTheme: AppBarTheme(
+          backgroundColor: const Color(0xFF0B3B60),
+          titleTextStyle: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+          ),
+          iconTheme: const IconThemeData(
+            color: Colors.white,
+          ),
+        ),
         scaffoldBackgroundColor: Colors.white,
         brightness: Brightness.light,
       ),
@@ -25,6 +38,12 @@ class AppWidget extends StatelessWidget {
         switch (settings.name) {
           case "/":
             return MaterialPageRoute(builder: (_) => HomePage());
+          case "/medicos":
+            return MaterialPageRoute(builder: (_) => MedicosPage());
+          case "/paciente":
+            return MaterialPageRoute(builder: (_) => PacientesPage());
+          case "/consulta":
+            return MaterialPageRoute(builder: (_) => ConsultasPage());
         }
       },
     );
