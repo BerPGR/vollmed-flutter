@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:vollmed/app/core/utils/text_styles.dart';
 import 'package:vollmed/app/model/medico_model.dart';
+import 'package:vollmed/app/viewmodel/medicos_view_model.dart';
 
 class MedicosPage extends StatefulWidget {
   const MedicosPage({super.key});
@@ -9,33 +12,17 @@ class MedicosPage extends StatefulWidget {
 }
 
 class _MedicosPageState extends State<MedicosPage> {
-  final List<Medico> medicos = [
-    Medico(
-        nome: "Adriano Moreira Sales",
-        especialidade: "Ginecologista",
-        crm: "15.879-SP"),
-    Medico(
-        nome: "Amanda Siqueira",
-        especialidade: "Oftalmologista",
-        crm: "65.789-SP"),
-    Medico(
-        nome: "Antônio Santana",
-        especialidade: "Clínico Geral",
-        crm: "37.124-SP"),
-    Medico(
-        nome: "Barbara Aparecida", especialidade: "Pediatra", crm: "15.879-SP"),
-    Medico(
-        nome: "Bernardo Oliveira", especialidade: "Pediatra", crm: "15.879-SP"),
-    Medico(
-      nome: "Brenda de Almeida",
-      especialidade: "Ortopedista",
-      crm: "47.889-PR",
-      email: "brenda.almeida@med.com.br",
-      telefone: "(51) 99999-8888",
-      endereco: "Av. das Graças Altas, 633 - Curitiba/PR\nCEP: 66.777-100",
-    ),
-  ];
   final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    if (context.read<MedicosViewModel>().medicos.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Provider.of<MedicosViewModel>(context, listen: false).getUsers();
+      });
+    }
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -45,14 +32,6 @@ class _MedicosPageState extends State<MedicosPage> {
 
   @override
   Widget build(BuildContext context) {
-    medicos.sort((a, b) => a.nome.compareTo(b.nome));
-
-    Map<String, List<Medico>> medicosAgrupados = {};
-    for (var medico in medicos) {
-      String letra = medico.nome[0].toUpperCase();
-      medicosAgrupados.putIfAbsent(letra, () => []).add(medico);
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("Médicos"),
@@ -76,41 +55,59 @@ class _MedicosPageState extends State<MedicosPage> {
                   print(value);
                 },
               )),
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: medicosAgrupados.length,
-                  itemBuilder: (context, index) {
-                    String letra = medicosAgrupados.keys.elementAt(index);
-                    List<Medico> listaMedicos = medicosAgrupados[letra]!;
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Row(
-                              spacing: 10,
-                              children: [
-                                Text(
-                                  letra,
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.blue,
+              Consumer<MedicosViewModel>(builder: (context, model, child) {
+                if (model.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (model.medicos.isEmpty) {
+                  return const Center(child: Text("Nenhum médico cadastrado"));
+                }
+
+                Map<String, List<Medico>> medicosAgrupados = {};
+                for (var medico in model.medicos) {
+                  String letra = medico.nome[0].toUpperCase();
+                  medicosAgrupados.putIfAbsent(letra, () => []).add(medico);
+                }
+                return Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: medicosAgrupados.length,
+                    itemBuilder: (context, index) {
+                      String letra = medicosAgrupados.keys.elementAt(index);
+                      List<Medico> listaMedicos = medicosAgrupados[letra]!;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Row(
+                                spacing: 10,
+                                children: [
+                                  Text(
+                                    letra,
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue,
+                                    ),
                                   ),
-                                ),
-                                Image.asset("lib/app/shared/assets/imgs/logo_no_word.png",),
-                              ],
-                            )),
-                        ...listaMedicos
-                            .map((medico) => MedicoTile(medico: medico))
-                            .toList(),
-                      ],
-                    );
-                  },
-                ),
-              ),
-              SizedBox(height: 60,)
+                                  Image.asset(
+                                    "lib/app/shared/assets/imgs/logo_no_word.png",
+                                  ),
+                                ],
+                              )),
+                          ...listaMedicos
+                              .map((medico) => MedicoTile(medico: medico))
+                              .toList(),
+                        ],
+                      );
+                    },
+                  ),
+                );
+              }),
+              SizedBox(
+                height: 60,
+              )
             ],
           ),
         ),
@@ -154,24 +151,63 @@ class MedicoTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ListTile(
-        
-          title: Text(medico.nome,
-              style: const TextStyle(fontWeight: FontWeight.bold)),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("${medico.especialidade} | CRM ${medico.crm}"),
-              if (medico.email != null)
-                Text(medico.email!, style: TextStyle(color: Colors.grey[700])),
-              if (medico.telefone != null)
-                Text(medico.telefone!, style: TextStyle(color: Colors.grey[700])),
-              if (medico.endereco != null)
-                Text(medico.endereco!, style: TextStyle(color: Colors.grey[700])),
-            ],
-          ),
-          trailing: const Icon(Icons.arrow_drop_down),
+        ExpansionTile(
+          shape: Border.all(color: Colors.transparent),
+          expansionAnimationStyle: AnimationStyle(curve: Curves.easeInOut, duration: Duration(milliseconds: 500)),
+          title: Text(medico.nome),
+          subtitle: Text("${medico.especialidade} | CRM ${medico.crm}"),
+          children: [
+            ListTile(
+              title: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    medico.email ?? "Email Não informado",
+                    textAlign: TextAlign.left,
+                  ),
+                  Text(
+                    "${medico.endereco.logradouro}, ${medico.endereco.numero} - "
+                    "${medico.endereco.cidade}/${medico.endereco.uf}\n"
+                    "CEP: ${medico.endereco.cep}",
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.35,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            textStyle: TextStyles.caption.merge(TextStyle(color: Color(0xFF0B3B60))),  
+                            shape: RoundedRectangleBorder(
+                              side: BorderSide(color: Color(0xFF0B3B60)),
+                              borderRadius: BorderRadius.circular(10),
+                          ),),
+                            onPressed: () {},
+                            child: const Text("Editar")),
+                      ),
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.35,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            textStyle: TextStyles.caption.merge(TextStyle(color: Color(0xFF0B3B60))),  
+                            shape: RoundedRectangleBorder(
+                              side: BorderSide(color: Color(0xFF0B3B60)),
+                              borderRadius: BorderRadius.circular(10),
+                          ),),
+                            onPressed: () {},
+                            child: const Text("Desativar perfil", textAlign: TextAlign.center,)),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            )
+          ],
         ),
         const Divider()
       ],
